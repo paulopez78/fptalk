@@ -22,6 +22,7 @@ let apply fn opt=
     | _ , Nothing -> Nothing
     | Nothing, _ -> Nothing
 
+let a = map (fun x -> x > 5)
 let getCustomer =
     function
     | 0 -> Nothing
@@ -34,6 +35,13 @@ let parseName =
 
 let getCustomer' = bind getCustomer
 let parseName' = bind parseName
+
+let a = [1]
+
+let map fn opt =
+    match opt with
+    | [] -> []
+    | xs::[x] -> fn(xs):: map fn [x]
 
 // let save = printf "Saving name %s"
 // let error = printf "Error saving name %s"
