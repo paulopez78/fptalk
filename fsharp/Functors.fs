@@ -90,17 +90,17 @@ let getYearsOfExperience email =
     else    
         Nothing
 
-let getYearsOfExperience email= 
-    match email with
-    | "bob@abax.no"   ->  Just 4
-    | "alice@abax.no" ->  Just 8
-    |  _               -> Nothing
+// let getYearsOfExperience email= 
+//     match email with
+//     | "bob@abax.no"   ->  Just 4
+//     | "alice@abax.no" ->  Just 8
+//     |  _               -> Nothing
 
-let getYearsOfExperience = 
-    function
-    |  "bob@abax.no"   ->  Just 4
-    |  "alice@abax.no" ->  Just 8
-    |  _               -> Nothing
+// let getYearsOfExperience = 
+//     function
+//     |  "bob@abax.no"   ->  Just 4
+//     |  "alice@abax.no" ->  Just 8
+//     |  _               -> Nothing
         
 
 let isSeniorDeveloper email = 
