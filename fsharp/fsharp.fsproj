@@ -8,10 +8,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="Composition.fs" />
-    <Compile Include="Functors.fs" />
-    <Compile Include="Tests.fs" />
-    <Compile Include="Basics.fs" />
+    <Compile Include="Samples.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>
 
