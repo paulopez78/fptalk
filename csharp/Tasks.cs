@@ -20,7 +20,7 @@ namespace csharp
 
             Task<int> yearsOfExperience = Task.FromResult(1);
 
-            yearsOfExperience .Select(Level) .Select(Promote) .Select(Years) .Select(IsSenior);
+            // yearsOfExperience .Select(Level) .Select(Promote) .Select(Years) .Select(IsSenior);
 
             // Console.WriteLine("RESULT IS:" + await task);
 

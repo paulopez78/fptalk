@@ -15,7 +15,7 @@ namespace csharp
 
             Nullable<int> yearsOfExperience = 3;
 
-            yearsOfExperience.Select(IsSenior).Select(Log);
+            // yearsOfExperience.Select(IsSenior).Select(Log);
 
             // Console.WriteLine("RESULT IS:" + await task);
         }

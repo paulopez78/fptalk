@@ -4,7 +4,6 @@ namespace csharp
     using System.Linq;
     using System.Collections.Generic;
     using Xunit;
-    using static Collections;
     using static CommonExtensions;
     using static System.Linq.Enumerable;
     using System.Threading.Tasks;
@@ -16,28 +15,10 @@ namespace csharp
         {
             IEnumerable<int> yearsOfExperience = new[] { 8, 5, 2, 2, 10, 0 };
 
-            Func<int,bool> isSenior = years => years > 5;
+            bool IsSenior(int years) => years > 5;
 
-            var elevatedIsSenior = Map(isSenior);
-
-            isSenior(8); // true
-            elevatedIsSenior(new[]{ 8, 5, 2}); // [ true, false, true ]
-
-
-            IEnumerable<bool> seniors1 = yearsOfExperience.Select(IsSenior);
-            IEnumerable<bool> seniors2 = yearsOfExperience.Select(isSenior);
-            IEnumerable<bool> seniors3 = yearsOfExperience.Select(years => years > 5);
-
-            yearsOfExperience
-            .Select(Level)
-            .Select(Log)
-            .Select(Promote)
-            .Select(Log)
-            .Select(Years)
-            .Select(Log)
-            .Select(IsSenior)
-            .Select(Log);
-            // .ToArray();
+            yearsOfExperience.Select(x => IsSenior(x));
+            yearsOfExperience.Select(IsSenior);
 
 
             // level
@@ -47,33 +28,33 @@ namespace csharp
 
             // var a = "devops".Skills();
 
-            new[] {"devops", "backend", "frontend"}.SelectMany(Skills).Select(Upgrade);
-            Empty<string>().SelectMany(Skills).Select(Upgrade);
+            // new[] {"devops", "backend", "frontend"}.SelectMany(Skills).Select(Upgrade);
+            // Empty<string>().SelectMany(Skills).Select(Upgrade);
 
 
-            yearsOfExperience.Select(Level).SelectMany(Skills).Select(Category);
+            // yearsOfExperience.Select(Level).SelectMany(Skills).Select(Category);
 
 
-            // new[] {"senior", "junior", "mid"}.SelectMany(Skills).Select(Category);
+            // // new[] {"senior", "junior", "mid"}.SelectMany(Skills).Select(Category);
 
-            Skills("devops");
-            Skills("backend");
+            // Skills("devops");
+            // Skills("backend");
 
-            Func<string, IEnumerable<string>> skills = Skills;
+            // Func<string, IEnumerable<string>> skills = Skills;
 
-            var bindedSkills = Bind(skills);
+            // var bindedSkills = Bind(skills);
 
-            var backops = bindedSkills(new[] {"backend", "devops"}); 
+            // var backops = bindedSkills(new[] {"backend", "devops"}); 
 
-            backops = new[] {"backend", "devops"}.SelectMany(Skills);
+            // backops = new[] {"backend", "devops"}.SelectMany(Skills);
 
-            var upgradedBackops = new[] {"backend", "devops"}.SelectMany(Skills).Select(Upgrade);
+            // var upgradedBackops = new[] {"backend", "devops"}.SelectMany(Skills).Select(Upgrade);
 
-            IEnumerable<IEnumerable<string>> nestedBackops = new[] {"backend", "devops"}.Select(Skills);
+            // IEnumerable<IEnumerable<string>> nestedBackops = new[] {"backend", "devops"}.Select(Skills);
 
-            new[] {"backend", "devops"}.SelectMany(Skills).Select(Upgrade);
+            // new[] {"backend", "devops"}.SelectMany(Skills).Select(Upgrade);
 
-            new[] {"backend", "devops"}.Select(Skills);
+            // new[] {"backend", "devops"}.Select(Skills);
             // [["docker", "azure"],["csharp", "visualstudio"]]
 
             // new[] {"backend", "devops"}.Select(Skills).Select(Upgrade);
@@ -127,54 +108,9 @@ namespace csharp
             Console.WriteLine($"LOG {result}");
             return result;
         }
-        bool IsSenior(int years) => years > 5;
-
-        string Level(int years)
-            => years switch
-            {
-                > 10 => "Rockstar",
-                > 8  => "Ninja",
-                > 5  => "Senior",
-                > 3  => "Mid",
-                > 0  => "Junior",
-                _    => "No idea what I'm doing",
-            };
-
-
-        string Promote(string level)
-            => level switch
-            {
-                "Ninja"  => "Rockstar",
-                "Senior" => "Ninja",
-                "Mid"    => "Senior",
-                "Junior" => "Mid",
-                _        => "Junior",
-            };
-
-        int Years(string level)
-            => level switch
-            {
-                "Rockstar" => 12,
-                "Ninja"    => 10,
-                "Senior"   => 8,
-                "Mid"      => 6,
-                "Junior"   => 3,
-                _          => 0
-            };
     }
 
     public static class CommonExtensions {
-        public static IEnumerable<string> Skills(string level)
-            => level switch
-            {
-                "Rockstar" => new[] {"agile"},
-                "Ninja"    => new[] {"fsharp, haskell"},
-                "Senior"   => new[] {"k8s", "go"},
-                "Mid"      => new[] {"bash", "docker"},
-                "Junior"   => new[] {"csharp", "js"},
-                _          => Empty<string>().ToArray()
-            };
-
         public static string Upgrade(string skill)
             => skill switch
             {
@@ -195,38 +131,6 @@ namespace csharp
                 "docker"  => "devops",
                 "js"      => "frontend",
                 _         => ""
-            };
-
-        public static string Level(int years)
-            => years switch
-            {
-                > 10 => "Rockstar",
-                > 8  => "Ninja",
-                > 5  => "Senior",
-                > 3  => "Mid",
-                > 0  => "Junior",
-                _    => "No idea what I'm doing",
-            };
-
-        public static string Promote(string level)
-            => level switch
-            {
-                "Ninja"  => "Rockstar",
-                "Senior" => "Ninja",
-                "Mid"    => "Senior",
-                "Junior" => "Mid",
-                _        => "Junior",
-            };
-
-        public static int Years(this string level)
-            => level switch
-            {
-                "Rockstar" => 12,
-                "Ninja"    => 10,
-                "Senior"   => 8,
-                "Mid"      => 6,
-                "Junior"   => 2,
-                _          => 0
             };
     }
 }

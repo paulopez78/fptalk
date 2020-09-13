@@ -16,11 +16,11 @@ namespace csharp
                 IsEventIfAdd2Then5(2)
             );
 
-            bool IsEven(int x) => x % 2 == 0;
+            bool IsEven(int x) => x.IsEven();
 
-            int Add2 (int x) => x + 2;
+            int Add2 (int x) => x.Add2();
 
-            int Add5 (int x) => x + 5;
+            int Add5 (int x) => x.Add5();
 
             int Add2Then5 (int x) => Add5(Add2(x));
 
