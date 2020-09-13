@@ -9,7 +9,7 @@ namespace csharp
 {
     public class UnitTest1
     {
-        [Fact]
+        // [Fact]
         public void CollectionFunctor()
         {
             IEnumerable<int> experiences = new[] { 8, 1, 1, 2, 4, 0 };
@@ -42,7 +42,7 @@ namespace csharp
                 yearsToArray[i] = yearsToArray[i] + 1;
             }
 
-            var newYears = Select(experiences, y => y + 1);
+            // var newYears = Select(experiences, y => y + 1);
 
 
             // IEnumerable<int> Select(IEnumerable<int> source)
@@ -61,14 +61,25 @@ namespace csharp
             //     }
             // }
 
-            IEnumerable<TResult> Select<TSource,TResult>(IEnumerable<TSource> source, Func<TSource, TResult> selector)
+            // IEnumerable<TResult> Select<TSource,TResult>(IEnumerable<TSource> source, Func<TSource, TResult> selector)
+            // {
+            //     foreach (var item in source)
+            //     {
+            //         yield return selector(item);
+            //     }
+            // }
+
+            IEnumerable<TResult> SelectMany<TSource, TResult>(IEnumerable<TSource> source, Func<TSource, IEnumerable<TResult>> selector)
             {
-                foreach (var item in source)
-                {
-                    yield return selector(item);
+                foreach (var element in source) {
+                    foreach (var subElement in selector(element)) {
+                        yield return subElement;
+                    }
                 }
             }
 
+            Func<IEnumerable<TSource>, IEnumerable<TResult>> Bind<TSource, TResult>(Func<TSource, IEnumerable<TResult>> func)
+                => source => source.SelectMany(func);
             
 
             // IEnumerable<int> Select(IEnumerable<int> source)
@@ -140,17 +151,15 @@ namespace csharp
 
             IEnumerable<Developer> developers = new[] { alice, bob };
 
-            var result = developers.Select(Languages);
+            // var seniorLanguage = GetDeveloperSkills("bob@abax.no").Select(skill => IsSenior(skill.));
 
-            // string[] Paradigm(string level) => level switch
-            // {
-            //     "csharp" => ["StronglyTyped", "OOP"],
-            //     "fsharp" => ["StronglyTyped", "FP"],
-            //     "kotlin" => ["OOP", "FP"],
-            //     "python" => [""],
-            //     "python" => "OOP",
-            //     _        => "Junior",
-            // };
+            
+
+            IEnumerable<(string language, int experience)> GetDeveloperSkills(string email) 
+                =>  new[] { ("csharp", 8), ("kotlin", 2),  ("python", 4) };
+
+            bool IsSenior (int years) => years > 5;
+
 
             IEnumerable<string> Languages(Developer dev) => dev.Skills.Select(x => x.lang);
         }
@@ -171,6 +180,11 @@ namespace csharp
             > 3  => "Mid",
             > 0  => "Junior",
             _    => "No idea what I'm doing",
+        };
+
+        string[] Skills(string level) => level switch
+        {
+            "Ninja"  => new[] { "haskell", "kubernetes", "agile"},
         };
 
         string Promote(string level) => level switch
@@ -216,12 +230,12 @@ namespace csharp
             action(unwrapped);
         }
 
-        public static IEnumerable<TResult> Select<TSource, TResult>(this IEnumerable<TSource> source, Func<TSource, TResult> func)
-        {
-            foreach (var item in source)
-            {
-                yield return func(item);
-            }
-        }
+        // public static IEnumerable<TResult> Select<TSource, TResult>(this IEnumerable<TSource> source, Func<TSource, TResult> func)
+        // {
+        //     foreach (var item in source)
+        //     {
+        //         yield return func(item);
+        //     }
+        // }
     }
 }

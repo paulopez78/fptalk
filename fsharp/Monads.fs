@@ -128,4 +128,4 @@ let yearsOfExperience =  async { return 6 }
 
 
 [<Fact>]
-let ``My test`` () = printf "%b" (isSeniorDeveloper "bob")
+let ``Monads results`` () = printf "%b" (isSeniorDeveloper "bob")

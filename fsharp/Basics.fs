@@ -59,5 +59,3 @@ let c = [ 8; 5; 2; 2; 10; 0] |> List.map (level >> promote >> years >> isSenior)
 
 
 
-[<Fact>]
-let ``My test`` () = Assert.True(true)

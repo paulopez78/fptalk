@@ -36,12 +36,12 @@ let parseName =
 let getCustomer' = bind getCustomer
 let parseName' = bind parseName
 
-let a = [1]
+// let a = [1]
 
-let map fn opt =
-    match opt with
-    | [] -> []
-    | xs::[x] -> fn(xs):: map fn [x]
+// let map fn opt =
+//     match opt with
+//     | [] -> []
+//     | xs::[x] -> fn(xs):: map fn [x]
 
 // let save = printf "Saving name %s"
 // let error = printf "Error saving name %s"
@@ -52,5 +52,3 @@ let map fn opt =
 //     | Just x -> save
 //     | Nothing -> error
 
-[<Fact>]
-let ``My test`` () = Assert.True(true)

@@ -8,7 +8,7 @@ namespace csharp
 
     public class Tasks
     {
-        [Fact]
+        // [Fact]
         public async Task TaskFunctor()
         {
             Func<int,bool> isSenior = years => years > 5;
@@ -23,6 +23,31 @@ namespace csharp
             yearsOfExperience .Select(Level) .Select(Promote) .Select(Years) .Select(IsSenior);
 
             // Console.WriteLine("RESULT IS:" + await task);
+
+
+        }
+
+        void Sample()
+        {
+
+            // GetYearsOfExperience("bob@abax.no").Select(Level).Select(Promote) .Select(Years) .Select(IsSenior);
+
+            // var yearsOfExperience = GetYearsOfExperience("bob@abax.no");
+
+
+            // Maybe<int> GetYearsOfExperience(string email) {
+            //     // Databae lookup by email
+            //     return Maybe.Nothing<int>;
+            //     // return Maybe<int>(5);
+            // }
+
+            // bool IsSeniorDeveloper(string email)
+            //     => GetYearsOfExperience(email)
+            //     .Select(Level).Select(Promote).Select(Years).Select(IsSenior)
+            //     .Match(
+            //         just: result => result
+            //         nothing: false
+            //     );
         }
 
         Func<IEnumerable<TSource>, IEnumerable<TResult>> Map<TSource, TResult>(Func<TSource, TResult> func) 
