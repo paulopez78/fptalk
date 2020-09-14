@@ -2,6 +2,7 @@ module Samples
 
 open Xunit
 open System.Collections
+open System.Net
 
 
 let add2 x = x + 2
@@ -51,11 +52,12 @@ let ``Composition tests`` () =
     )
 
 
+let isSenior x = x > 5
+let isSenior' = List.map isSenior
+
 [<Fact>]
 let ``List map tests`` () =
 
-    let isSenior x = x > 5
-    let isSenior' = List.map isSenior
 
     Assert.Equal<IEnumerable>(
         isSenior' yearsOfExperience, 
@@ -77,3 +79,70 @@ let ``List map tests`` () =
         yearsOfExperience |> List.map (level >> promote >> years >> isSenior)
     )
 
+type Maybe<'a> = 
+    | Nothing
+    | Just of 'a
+
+let map f opt =
+    match opt with
+    | Nothing -> Nothing
+    | Just x -> Just(f x)
+
+let map' f =
+    function
+    | Nothing -> Nothing
+    | Just x -> Just(f x)
+
+
+let getYearsOfExperience email= 
+    match email with
+    | "bob@abax.no"   ->  Just 3
+    | "alice@abax.no" ->  Just 4
+    |  _               -> Nothing
+
+let getYearsOfExperience' = 
+    function
+    |  "bob@abax.no"   ->  Just 3
+    |  "alice@abax.no" ->  Just 4
+    |  _               -> Nothing
+        
+let isAuthorized email =
+    email 
+    |> getYearsOfExperience 
+    |> map level |> map promote |> map years |> map isSenior
+    |> function
+    | Nothing    -> HttpStatusCode.NotFound
+    | Just false -> HttpStatusCode.Forbidden
+    | Just true  -> HttpStatusCode.OK
+
+[<Fact>]
+let ``Maybe functor tests`` () =
+    Assert.Equal(
+        Just false,
+        "bob@abax.no" |> getYearsOfExperience |> map level |> map promote |> map years |> map isSenior
+    )
+
+    Assert.Equal(
+        Just true,
+        "alice@abax.no" |> getYearsOfExperience |> map level |> map promote |> map years |> map isSenior
+    )
+
+    Assert.Equal(
+        Nothing,
+        "gary@abax.no" |> getYearsOfExperience |> map level |> map promote |> map years |> map isSenior
+    )
+
+    Assert.Equal(
+        HttpStatusCode.Forbidden,
+        "bob@abax.no" |> isAuthorized
+    )
+
+    Assert.Equal(
+        HttpStatusCode.OK,
+        "alice@abax.no" |> isAuthorized
+    )
+
+    Assert.Equal(
+        HttpStatusCode.NotFound,
+        "gary@abax.no" |> isAuthorized
+    )

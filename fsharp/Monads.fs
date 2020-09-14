@@ -1,6 +1,4 @@
-module Functors
-
-open Xunit
+module Monads
 
 type Maybe<'a> = 
     | Nothing 
@@ -16,7 +14,6 @@ let map f opt =
     match opt with 
     | Just x -> Just(f x)
     | Nothing -> Nothing
-
 
 
 
@@ -90,18 +87,6 @@ let getYearsOfExperience email =
     else    
         Nothing
 
-let getYearsOfExperience email= 
-    match email with
-    | "bob@abax.no"   ->  Just 4
-    | "alice@abax.no" ->  Just 8
-    |  _               -> Nothing
-
-let getYearsOfExperience = 
-    function
-    |  "bob@abax.no"   ->  Just 4
-    |  "alice@abax.no" ->  Just 8
-    |  _               -> Nothing
-        
 
 let isSeniorDeveloper email = 
     email 
@@ -112,20 +97,3 @@ let isSeniorDeveloper email =
     | Nothing -> false
 
 let result = isSeniorDeveloper "bob@abax.no"
-
-// Some 3 |> Option.map level |> Option.map promote 
-
-
-module Async =
-    let map f op = async {
-        let! x    = op
-        return f x
-    }
-
-let yearsOfExperience =  async { return 6 }
-
-
-
-
-[<Fact>]
-let ``Monads results`` () = printf "%b" (isSeniorDeveloper "bob")
