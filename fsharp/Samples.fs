@@ -8,20 +8,7 @@ let add2 x = x + 2
 let add5 x = x + 5
 let isEven x = x % 2 = 0
 
-[<Fact>]
-let ``Composition tests`` () =
-
-    let isEvenIfAdd2Then5 = add5 >> add2 >> isEven
-
-    Assert.Equal(
-        isEven(add5(add2(2))), 
-        isEvenIfAdd2Then5 2
-    )
-
-    Assert.Equal(
-        isEvenIfAdd2Then5 2,
-        2 |> add5 |> add2 |> isEven
-    )
+let yearsOfExperience = [ 8; 5; 2; 2; 10; 0]
 
 let level = function
     | x when x > 10 -> "Rockstar"
@@ -47,7 +34,22 @@ let years = function
     | "Junior"   -> 2
     | _          -> 0 
 
-let yearsOfExperience = [ 8; 5; 2; 2; 10; 0]
+
+[<Fact>]
+let ``Composition tests`` () =
+
+    let isEvenIfAdd2Then5 = add5 >> add2 >> isEven
+
+    Assert.Equal(
+        isEven(add5(add2(2))), 
+        isEvenIfAdd2Then5 2
+    )
+
+    Assert.Equal(
+        isEvenIfAdd2Then5 2,
+        2 |> add5 |> add2 |> isEven
+    )
+
 
 [<Fact>]
 let ``List map tests`` () =

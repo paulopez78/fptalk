@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using Xunit;
 
 namespace csharp
@@ -30,7 +32,7 @@ namespace csharp
         }
 
         [Fact]
-        public void IEnumerableFunctor_Tests()
+        public void IEnumerableSelect_Tests()
         {
             IEnumerable<int> yearsOfExperience = new[] { 8, 5, 2, 2, 10, 0 };
 
@@ -50,11 +52,46 @@ namespace csharp
             8.Level().Promote().Years().IsSenior(); // true
 
             Print(yearsOfExperience.Select(Level).Select(Promote).Select(Years).Select(IsSenior));
+            yearsOfExperience.Select(Log).Select(IsSenior).Select(Log).ToArray();
+        }
+
+        [Fact]
+        public async Task Task_Select_Tests()
+        {
+            Task<int> yearsOfExperience = Task.FromResult(6);
+
+            Assert.Equal(IsSenior(yearsOfExperience), yearsOfExperience.Select(IsSenior));
+            
+            Task<bool> result1 = yearsOfExperience.Select(IsSenior);
+            bool isSenior = await result1;
+            Assert.True(isSenior);
+
+            Task<bool> result2 = yearsOfExperience.Select(Level).Select(Promote).Select(Years).Select(IsSenior);
+            isSenior = await result2;
+            Assert.True(isSenior);
+
+            var liftedIsSenior = LiftTask<int,bool>(IsSenior);
+            Assert.Equal(liftedIsSenior(yearsOfExperience), yearsOfExperience.Select(IsSenior));
+
+            await yearsOfExperience.Select(Log).Select(IsSenior).Select(Log);
+        }
+
+        [Fact]
+        public async Task Nullable_Select_Tests()
+        {
+            Nullable<int> GetYearsOfExperience(string email) 
+                => email switch {
+                    "bob@abax.no"   => 3,
+                    "alice@abax.no" => 4,
+                    _               => null,
+                };
         }
 
         bool IsSenior(int years) => years.IsSenior(); // int -> bool
 
         IEnumerable<bool> IsSenior(IEnumerable<int> years) => years.Select(IsSenior); // IEnumerable<int> -> IEnumerable<bool>
+
+        Task<bool> IsSenior(Task<int> years) => years.Select(IsSenior); // Task<int> -> Task<bool>
 
         void Print<T>(IEnumerable<T> list) => Console.WriteLine(string.Join(",", list));
 
@@ -64,11 +101,23 @@ namespace csharp
         Func<IEnumerable<TSource>, IEnumerable<TResult>> Map<TSource, TResult>(Func<TSource, TResult> func)
             => Lift(func);
 
+        Func<Task<TSource>, Task<TResult>> LiftTask<TSource, TResult>(Func<TSource, TResult> func)
+            => source => source.Select(func);
+
+        Func<Task<TSource>, Task<TResult>> MapTask<TSource, TResult>(Func<TSource, TResult> func)
+            => LiftTask(func);
+
         string Level(int years) => years.Level();
 
         string Promote(string level) => level.Promote();
 
         int Years(string level) => level.Years();
+
+        T Log<T>(T result)
+        {
+            Console.Write($"LOG {result},");
+            return result;
+        }
     }
 
     public static class Extensions
@@ -113,12 +162,43 @@ namespace csharp
             _          => 0
         };
 
+        public static string Upgrade(string skill)
+            => skill switch
+            {
+                "fsharp" => "haskell",
+                "csharp" => "fsharp",
+                "docker" => "k8s",
+                "azure"  => "gcp",
+                _        => skill
+            };
+
         public static IEnumerable<TResult> Select<TSource, TResult>(this IEnumerable<TSource> source, Func<TSource, TResult> func)
         {
             foreach (var item in source)
             {
                 yield return func(item);
             }
+        }
+
+        public static IEnumerable<TResult> SelectMany<TSource, TResult>(this IEnumerable<TSource> source, Func<TSource, IEnumerable<TResult>> selector)
+        {
+            foreach (var element in source) {
+                foreach (var subElement in selector(element)) {
+                    yield return subElement;
+                }
+            }
+        }
+
+        public static async Task<TResult> Select<TSource, TResult>(this Task<TSource> source, Func<TSource, TResult> selector)
+        {
+            var x = await source;
+            return selector(x);
+        }
+
+        public static async Task<TResult> SelectMany<TSource, TResult>(this Task<TSource> source, Func<TSource, Task<TResult>> selector)
+        {
+            var x = await source;
+            return await selector(x);
         }
     }
 }
