@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -19,16 +20,6 @@ namespace csharp
                 2.Add2().Add5().IsEven(), 
                 IsEventIfAdd2Then5(2)
             );
-
-            bool IsEven(int x) => x.IsEven();
-
-            int Add2 (int x) => x.Add2();
-
-            int Add5 (int x) => x.Add5();
-
-            int Add2Then5 (int x) => Add5(Add2(x));
-
-            bool IsEventIfAdd2Then5 (int x) => IsEven(Add5(Add2(x)));
         }
 
         [Fact]
@@ -77,15 +68,75 @@ namespace csharp
         }
 
         [Fact]
-        public async Task Nullable_Select_Tests()
+        public void Nullable_Select_Tests()
         {
+            const string bob   = "bob@abax.no";
+            const string alice = "alice@abax.no";
+            const string gary  = "gary@abax.no";
+
             Nullable<int> GetYearsOfExperience(string email) 
                 => email switch {
-                    "bob@abax.no"   => 3,
-                    "alice@abax.no" => 4,
-                    _               => null,
+                    bob   => 3,
+                    alice => 4,
+                    _    => null,
                 };
+
+            HttpStatusCode IsAuthorized(string email)
+            {
+                var years = GetYearsOfExperience(email);
+                if (years is null) {
+                    return HttpStatusCode.NotFound;
+                }
+
+                var isSenior = years.Value.Add2().IsSenior();
+                return isSenior ? HttpStatusCode.OK : HttpStatusCode.Forbidden;
+            }
+
+            HttpStatusCode IsAuthorizedWithMatch(string email) 
+                => GetYearsOfExperience(email)
+                .Select(Add2).Select(IsSenior)
+                .Match(
+                    nothing: HttpStatusCode.NotFound,
+                    something: x => x ? HttpStatusCode.OK : HttpStatusCode.Forbidden
+                );
+
+            Nullable<bool> isBobSenior = GetYearsOfExperience(bob).Select(IsSenior);
+            Assert.False(isBobSenior);
+
+            Nullable<bool> isAliceSenior = GetYearsOfExperience(alice).Select(IsSenior);
+            Assert.False(isAliceSenior);
+
+            Nullable<bool> isSomeoneSenior = GetYearsOfExperience(gary).Select(IsSenior);
+            Assert.Null(isSomeoneSenior);
+
+            Assert.Equal(
+                IsAuthorized(alice), 
+                IsAuthorizedWithMatch(alice)
+            );
+
+            Assert.Equal(
+                IsAuthorized(bob), 
+                IsAuthorizedWithMatch(bob)
+            );
+
+            Assert.Equal(
+                IsAuthorized(gary), 
+                IsAuthorizedWithMatch(gary)
+            );
+
+            // does not compile, nullable only works for structs
+            GetYearsOfExperience(bob);//.Select(Level).Select(Promote).Select(Years).Select(IsSenior); 
         }
+
+        bool IsEven(int x) => x.IsEven();
+
+        int Add2 (int x) => x.Add2();
+
+        int Add5 (int x) => x.Add5();
+
+        int Add2Then5 (int x) => Add5(Add2(x));
+
+        bool IsEventIfAdd2Then5 (int x) => IsEven(Add5(Add2(x)));
 
         bool IsSenior(int years) => years.IsSenior(); // int -> bool
 
@@ -106,6 +157,11 @@ namespace csharp
 
         Func<Task<TSource>, Task<TResult>> MapTask<TSource, TResult>(Func<TSource, TResult> func)
             => LiftTask(func);
+
+        Func<Nullable<TSource>, Nullable<TResult>> LiftNullable<TSource, TResult>(Func<TSource, TResult> func)
+            where TSource: struct
+            where TResult: struct
+            => source => source.Select(func);
 
         string Level(int years) => years.Level();
 
@@ -200,5 +256,13 @@ namespace csharp
             var x = await source;
             return await selector(x);
         }
+        public static Nullable<TResult> Select<TSource, TResult> (this Nullable<TSource> source, Func<TSource, TResult> func) 
+            where TSource : struct 
+            where TResult : struct 
+            => source.HasValue ? func(source.Value) : null;
+
+        public static TResult Match<TSource,TResult>(this Nullable<TSource> source, TResult nothing, Func<TSource,TResult> something) 
+            where TSource: struct
+            => source.HasValue ? something(source.Value) : nothing;
     }
 }
