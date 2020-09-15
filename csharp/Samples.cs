@@ -185,6 +185,29 @@ namespace csharp
             );
         }
 
+        [Fact]
+        public async Task Tasks_SelectMany_Tests()
+        {
+            Task<string> PromoteAsync(string level) 
+                => level switch {
+                "Ninja"   => Task.FromResult("Rockstar"),
+                "Senior"  => Task.FromResult("Ninja"),
+                "Mid"     => Task.FromResult("Senior"),
+                "Junior"  => Task.FromResult("Mid"),
+            _         => Task.FromResult(level)
+            };
+
+            Task<int> yearsOfExperience = Task.FromResult(4);
+
+            await yearsOfExperience.Select(Level).Select(PromoteAsync);//.Select(Years).Select(IsSenior);
+
+            var isSenior = await yearsOfExperience.Select(Level).SelectMany(PromoteAsync).Select(Years).Select(IsSenior);
+            Assert.True(isSenior);
+
+            isSenior = await Bind<string, string>(PromoteAsync).Invoke(yearsOfExperience.Select(Level)).Select(Years).Select(IsSenior);
+            Assert.True(isSenior);
+        }
+
         const string bob   = "bob@abax.no";
         const string alice = "alice@abax.no";
         const string gary  = "gary@abax.no";
@@ -225,6 +248,9 @@ namespace csharp
             => source => source.Select(func);
 
         Func<IEnumerable<TSource>, IEnumerable<TResult>> Bind<TSource, TResult>(Func<TSource, IEnumerable<TResult>> func) 
+            => func.Bind();
+
+        Func<Task<TSource>, Task<TResult>> Bind<TSource, TResult>(Func<TSource, Task<TResult>> func) 
             => func.Bind();
 
         string Level(int years) => years.Level();
@@ -334,6 +360,7 @@ namespace csharp
             var x = await source;
             return await selector(x);
         }
+
         public static Nullable<TResult> Select<TSource, TResult> (this Nullable<TSource> source, Func<TSource, TResult> func) 
             where TSource : struct 
             where TResult : struct 
@@ -344,6 +371,9 @@ namespace csharp
             => source.HasValue ? something(source.Value) : nothing;
 
         public static Func<IEnumerable<TSource>, IEnumerable<TResult>> Bind<TSource, TResult>(this Func<TSource, IEnumerable<TResult>> func) 
+            => source => source.SelectMany(func);
+
+        public static Func<Task<TSource>, Task<TResult>> Bind<TSource, TResult>(this Func<TSource, Task<TResult>> func) 
             => source => source.SelectMany(func);
     }
 }
