@@ -70,9 +70,6 @@ namespace csharp
         [Fact]
         public void Nullable_Select_Tests()
         {
-            const string bob   = "bob@abax.no";
-            const string alice = "alice@abax.no";
-            const string gary  = "gary@abax.no";
 
             Nullable<int> GetYearsOfExperience(string email) 
                 => email switch {
@@ -173,7 +170,24 @@ namespace csharp
                 new[] { "csharp", "fsharp", "docker", "azure" },
                 bindedSkills(new [] { "backend", "devops"})
             );
+
+            string Group(string email) 
+                => email switch {
+                    bob   => "devops",
+                    alice => "backend",
+                    _     =>  "",
+                };
+
+
+            Assert.Equal(
+                new[] { "fsharp", "haskell", "k8s", "gcp" },
+                new[] { alice, bob }.Select(Group).SelectMany(Skills).Select(Upgrade)
+            );
         }
+
+        const string bob   = "bob@abax.no";
+        const string alice = "alice@abax.no";
+        const string gary  = "gary@abax.no";
 
         bool IsEven(int x) => x.IsEven();
 
