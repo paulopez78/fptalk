@@ -128,6 +128,53 @@ namespace csharp
             GetYearsOfExperience(bob);//.Select(Level).Select(Promote).Select(Years).Select(IsSenior); 
         }
 
+        [Fact]
+        public void IEnumerable_SelectMany_Tests()
+        {
+            IEnumerable<string> groups = new [] { "devops", "backend" };
+            IEnumerable<string> empty = Enumerable.Empty<string>();
+
+            Assert.Equal(
+                new [] { new[] { "docker", "azure" } , new[] { "csharp", "fsharp"} },
+                groups.Select(Skills)
+            );
+
+            Assert.Equal(
+                new [] { "docker", "azure", "csharp", "fsharp" },
+                groups.SelectMany(Skills)
+            );
+
+            Assert.Equal(
+                empty,
+                empty.SelectMany(Skills)
+            );
+
+            // does not compile
+            groups.Select(Skills);//.Select(Upgrade);
+
+
+            groups.Select(Skills);
+
+            IEnumerable<string> backOps = groups.SelectMany(Skills).Select(Upgrade);
+
+            Assert.Equal(
+                new [] { "k8s", "gcp", "fsharp", "haskell" },
+                backOps
+            );
+
+            var bindedSkills = Bind<string, string>(Skills);
+
+            Assert.Equal(
+                new[] { "csharp", "fsharp" },
+                Skills("backend")
+            );
+
+            Assert.Equal(
+                new[] { "csharp", "fsharp", "docker", "azure" },
+                bindedSkills(new [] { "backend", "devops"})
+            );
+        }
+
         bool IsEven(int x) => x.IsEven();
 
         int Add2 (int x) => x.Add2();
@@ -163,11 +210,18 @@ namespace csharp
             where TResult: struct
             => source => source.Select(func);
 
+        Func<IEnumerable<TSource>, IEnumerable<TResult>> Bind<TSource, TResult>(Func<TSource, IEnumerable<TResult>> func) 
+            => func.Bind();
+
         string Level(int years) => years.Level();
 
         string Promote(string level) => level.Promote();
 
         int Years(string level) => level.Years();
+
+        IEnumerable<string> Skills (string group) => group.Skills();
+
+        string Upgrade (string skill) => skill.Upgrade();
 
         T Log<T>(T result)
         {
@@ -218,7 +272,17 @@ namespace csharp
             _          => 0
         };
 
-        public static string Upgrade(string skill)
+        public static IEnumerable<string> Skills(this string group)
+            => group switch
+            {
+                "devops"    => new[] { "docker", "azure" },
+                "backend"   => new[] { "csharp", "fsharp" },
+                "fullstack" => new[] { "js" },
+                "frontend"  => new[] { "js", "css" },
+                _           => new string[] {}
+            };
+
+        public static string Upgrade(this string skill)
             => skill switch
             {
                 "fsharp" => "haskell",
@@ -264,5 +328,8 @@ namespace csharp
         public static TResult Match<TSource,TResult>(this Nullable<TSource> source, TResult nothing, Func<TSource,TResult> something) 
             where TSource: struct
             => source.HasValue ? something(source.Value) : nothing;
+
+        public static Func<IEnumerable<TSource>, IEnumerable<TResult>> Bind<TSource, TResult>(this Func<TSource, IEnumerable<TResult>> func) 
+            => source => source.SelectMany(func);
     }
 }
