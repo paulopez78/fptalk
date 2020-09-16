@@ -58,7 +58,6 @@ let isSenior' = List.map isSenior
 [<Fact>]
 let ``List map tests`` () =
 
-
     Assert.Equal<IEnumerable>(
         isSenior' yearsOfExperience, 
         List.map isSenior yearsOfExperience
@@ -207,12 +206,12 @@ let promote' = function
     | _         -> Nothing
 
 let years' = function 
-    | "Rockstar" -> Some 12
-    | "Ninja"    -> Some 10
-    | "Senior"   -> Some 8
-    | "Mid"      -> Some 5
-    | "Junior"   -> Some 2
-    | _          -> None
+    | "Rockstar" -> Just 12
+    | "Ninja"    -> Just 10
+    | "Senior"   -> Just 8
+    | "Mid"      -> Just 5
+    | "Junior"   -> Just 2
+    | _          -> Nothing
 
 let level'' = function
     | x when x > 80 -> None
@@ -241,6 +240,22 @@ let years'' = function
 
 [<Fact>]
 let ``maybe monad test`` () =
-     Assert.Equal( level' -5 |> bind promote', Nothing)
-     Assert.Equal( level' 10 |> bind promote', Just "Rockstar")
-     Assert.Equal( level' 90 |> bind promote', Nothing)
+
+    let emoji = "alice@abax.no" 
+                 |> getYearsOfExperience' 
+                 |> bind level' |> bind promote' |> bind years' |> map isSenior 
+                 |> function 
+                 | Just true  -> ":)" 
+                 | Just false -> ":(" 
+                 | Nothing    -> ":/"
+
+    Assert.Equal(emoji, ":)");
+
+    Assert.Equal( level' -5 |> bind promote', Nothing)
+    Assert.Equal( level' 10 |> bind promote', Just "Rockstar")
+    Assert.Equal( level' 90 |> bind promote', Nothing)
+
+    Assert.Equal( level'' -5 |> Option.bind promote'', None)
+    Assert.Equal( level'' 10 |> Option.bind promote'', Some "Rockstar")
+    Assert.Equal( level'' 90 |> Option.bind promote'', None)
+

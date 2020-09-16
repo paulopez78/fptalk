@@ -70,7 +70,6 @@ namespace csharp
         [Fact]
         public void Nullable_Select_Tests()
         {
-
             Nullable<int> GetYearsOfExperience(string email) 
                 => email switch {
                     bob   => 3,
@@ -206,6 +205,118 @@ namespace csharp
 
             isSenior = await Bind<string, string>(PromoteAsync).Invoke(yearsOfExperience.Select(Level)).Select(Years).Select(IsSenior);
             Assert.True(isSenior);
+        }
+
+        [Fact]
+        public async Task Life_Without_Monads_Tests()
+        {
+            int? GetYearsOfExperience(string email) => email switch { bob => 3, alice => 4, _ => null, };
+
+            string Level(int years) => years switch { > 10 => "Rockstar", > 8 => "Ninja", > 5 => "Senior", > 3  => "Mid", > 0  => "Junior", _ => null };
+
+            string Promote(string level) => level switch { "Ninja" => "Rockstar", "Senior" => "Ninja", "Mid" => "Senior", "Junior" => "Mid", _ => null };
+
+            int? Years(string level) => level switch { "Rockstar" => 12, "Ninja" => 10, "Senior" => 8, "Mid" => 6, "Junior" => 2, _ => null };
+
+            bool? IsSenior(int? years) => years.HasValue ? years > 6 : null;
+
+            bool TryGetYearsOfExperience(string email, out int years)
+            {
+                var result = GetYearsOfExperience(email);
+                years = result.HasValue ? result.Value : default;
+                return result.HasValue;
+            }
+
+            bool TryLevel(int years, out string level)
+            {
+                var result = Level(years);
+                var hasValue = !string.IsNullOrEmpty(result);
+
+                level = hasValue ? result : null;
+                return hasValue;
+            }
+
+            bool TryPromote(string level, out string promotion)
+            {
+                var result = Promote(level);
+                var hasValue = !string.IsNullOrEmpty(result);
+
+                promotion = hasValue ? result : null;
+                return hasValue;
+            } 
+
+            bool TryYears(string level, out int years)
+            {
+                var result = Years(level);
+                years = result.HasValue ? result.Value : default;
+                return result.HasValue;
+            }
+
+            bool TryIsSenior(int? years, out bool isSenior)
+            {
+                var result = IsSenior(years);
+                isSenior = result.HasValue ? result.Value : default;
+                return result.HasValue;
+            }
+
+            HttpStatusCode IsAuthorized(string email)
+            {
+                var years = GetYearsOfExperience(email);
+
+                if (years.HasValue) {
+                    var level = Level(years.Value);
+
+                    if(!string.IsNullOrEmpty(level)){
+                        var newLevel = Promote(level);
+
+                        if(!string.IsNullOrEmpty(newLevel)){
+                            var newYears = Years(newLevel);
+
+                            if (newYears.HasValue) {
+                                var senior = IsSenior(newYears);
+
+                                if (senior.HasValue){
+                                    return senior.Value 
+                                        ? HttpStatusCode.OK 
+                                        : HttpStatusCode.Forbidden;
+                                }
+                            }
+                        }
+                    }
+                }
+
+                return HttpStatusCode.NotFound;
+            }
+
+            HttpStatusCode TryIsAuthorized(string email) 
+             => TryGetYearsOfExperience(email, out var years)
+                    ? TryLevel(years, out var level)
+                        ? TryPromote(level, out var promotion)
+                            ? TryYears(promotion, out var newYears)
+                                ? TryIsSenior(newYears, out var isSenior)
+                                    ? isSenior 
+                                        ? HttpStatusCode.OK 
+                                        : HttpStatusCode.Forbidden
+                                    : HttpStatusCode.NotFound
+                                : HttpStatusCode.NotFound
+                            : HttpStatusCode.NotFound
+                        : HttpStatusCode.NotFound
+                    : HttpStatusCode.NotFound;
+
+            Assert.Equal(
+                IsAuthorized(alice),
+                TryIsAuthorized(alice)
+            );
+
+            Assert.Equal(
+                IsAuthorized(bob),
+                TryIsAuthorized(bob)
+            );
+
+            Assert.Equal(
+                IsAuthorized(gary),
+                TryIsAuthorized(gary)
+            );
         }
 
         const string bob   = "bob@abax.no";
