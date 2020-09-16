@@ -210,15 +210,43 @@ namespace csharp
         [Fact]
         public async Task Life_Without_Monads_Tests()
         {
-            int? GetYearsOfExperience(string email) => email switch { bob => 3, alice => 4, _ => null, };
+            int? GetYearsOfExperience(string email) 
+            => email switch { 
+                "bob@abax.no"   => 3, 
+                "alice@abax.no" => 4, 
+                _               => null
+            };
 
-            string Level(int years) => years switch { > 10 => "Rockstar", > 8 => "Ninja", > 5 => "Senior", > 3  => "Mid", > 0  => "Junior", _ => null };
+            string Level(int years) 
+            => years switch { 
+                > 10 => "Rockstar", 
+                > 8  => "Ninja", 
+                > 5  => "Senior", 
+                > 3  => "Mid", 
+                > 0  => "Junior", 
+                _    => null 
+            };
 
-            string Promote(string level) => level switch { "Ninja" => "Rockstar", "Senior" => "Ninja", "Mid" => "Senior", "Junior" => "Mid", _ => null };
+            string Promote(string level) 
+            => level switch { 
+                "Ninja"  => "Rockstar", 
+                "Senior" => "Ninja", 
+                "Mid"    => "Senior", 
+                "Junior" => "Mid", 
+                _ => null 
+            };
 
-            int? Years(string level) => level switch { "Rockstar" => 12, "Ninja" => 10, "Senior" => 8, "Mid" => 6, "Junior" => 2, _ => null };
+            int? Years(string level) 
+            => level switch { 
+                "Rockstar" => 12, 
+                "Ninja"    => 10, 
+                "Senior"   => 8, 
+                "Mid"      => 6, 
+                "Junior"   => 2, 
+                _ => null 
+            };
 
-            bool? IsSenior(int? years) => years.HasValue ? years > 6 : null;
+            bool IsSenior(int years) => years > 6;
 
             bool TryGetYearsOfExperience(string email, out int years)
             {
@@ -252,13 +280,6 @@ namespace csharp
                 return result.HasValue;
             }
 
-            bool TryIsSenior(int? years, out bool isSenior)
-            {
-                var result = IsSenior(years);
-                isSenior = result.HasValue ? result.Value : default;
-                return result.HasValue;
-            }
-
             HttpStatusCode IsAuthorized(string email)
             {
                 var years = GetYearsOfExperience(email);
@@ -273,13 +294,9 @@ namespace csharp
                             var newYears = Years(newLevel);
 
                             if (newYears.HasValue) {
-                                var senior = IsSenior(newYears);
-
-                                if (senior.HasValue){
-                                    return senior.Value 
+                                return IsSenior(newYears.Value)
                                         ? HttpStatusCode.OK 
                                         : HttpStatusCode.Forbidden;
-                                }
                             }
                         }
                     }
@@ -293,14 +310,12 @@ namespace csharp
                     ? TryLevel(years, out var level)
                         ? TryPromote(level, out var promotion)
                             ? TryYears(promotion, out var newYears)
-                                ? TryIsSenior(newYears, out var isSenior)
-                                    ? isSenior 
+                                    ? IsSenior(newYears)
                                         ? HttpStatusCode.OK 
                                         : HttpStatusCode.Forbidden
                                     : HttpStatusCode.NotFound
                                 : HttpStatusCode.NotFound
                             : HttpStatusCode.NotFound
-                        : HttpStatusCode.NotFound
                     : HttpStatusCode.NotFound;
 
             Assert.Equal(
