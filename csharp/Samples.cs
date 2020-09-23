@@ -17,7 +17,7 @@ namespace csharp
             Assert.Equal(IsEven(Add5(Add2(2))), IsEventIfAdd2Then5(2));
 
             Assert.Equal(
-                2.Add2().Add5().IsEven(), 
+                2.Add2().Add5().IsEven(),
                 IsEventIfAdd2Then5(2)
             );
         }
@@ -33,7 +33,7 @@ namespace csharp
             Print(yearsOfExperience.Select(IsSenior));
             Print(IsSenior(yearsOfExperience));
 
-            Func<IEnumerable<int>, IEnumerable<bool>> liftedIsSenior = Lift<int,bool>(IsSenior);
+            Func<IEnumerable<int>, IEnumerable<bool>> liftedIsSenior = Lift<int, bool>(IsSenior);
 
             Assert.Equal(liftedIsSenior(yearsOfExperience), yearsOfExperience.Select(IsSenior));
             Assert.Equal(liftedIsSenior(yearsOfExperience), IsSenior(yearsOfExperience));
@@ -52,7 +52,7 @@ namespace csharp
             Task<int> yearsOfExperience = Task.FromResult(6);
 
             Assert.Equal(IsSenior(yearsOfExperience), yearsOfExperience.Select(IsSenior));
-            
+
             Task<bool> result1 = yearsOfExperience.Select(IsSenior);
             bool isSenior = await result1;
             Assert.True(isSenior);
@@ -61,7 +61,7 @@ namespace csharp
             isSenior = await result2;
             Assert.True(isSenior);
 
-            var liftedIsSenior = LiftTask<int,bool>(IsSenior);
+            var liftedIsSenior = LiftTask<int, bool>(IsSenior);
             Assert.Equal(liftedIsSenior(yearsOfExperience), yearsOfExperience.Select(IsSenior));
 
             await yearsOfExperience.Select(Log).Select(IsSenior).Select(Log);
@@ -70,17 +70,19 @@ namespace csharp
         [Fact]
         public void Nullable_Select_Tests()
         {
-            Nullable<int> GetYearsOfExperience(string email) 
-                => email switch {
-                    bob   => 3,
+            Nullable<int> GetYearsOfExperience(string email)
+                => email switch
+                {
+                    bob => 3,
                     alice => 4,
-                    _    => null,
+                    _ => null,
                 };
 
             HttpStatusCode IsAuthorized(string email)
             {
                 var years = GetYearsOfExperience(email);
-                if (years is null) {
+                if (years is null)
+                {
                     return HttpStatusCode.NotFound;
                 }
 
@@ -88,7 +90,7 @@ namespace csharp
                 return isSenior ? HttpStatusCode.OK : HttpStatusCode.Forbidden;
             }
 
-            HttpStatusCode IsAuthorizedWithMatch(string email) 
+            HttpStatusCode IsAuthorizedWithMatch(string email)
                 => GetYearsOfExperience(email)
                 .Select(Add2).Select(IsSenior)
                 .Match(
@@ -106,17 +108,17 @@ namespace csharp
             Assert.Null(isSomeoneSenior);
 
             Assert.Equal(
-                IsAuthorized(alice), 
+                IsAuthorized(alice),
                 IsAuthorizedWithMatch(alice)
             );
 
             Assert.Equal(
-                IsAuthorized(bob), 
+                IsAuthorized(bob),
                 IsAuthorizedWithMatch(bob)
             );
 
             Assert.Equal(
-                IsAuthorized(gary), 
+                IsAuthorized(gary),
                 IsAuthorizedWithMatch(gary)
             );
 
@@ -127,16 +129,16 @@ namespace csharp
         [Fact]
         public void IEnumerable_SelectMany_Tests()
         {
-            IEnumerable<string> groups = new [] { "devops", "backend" };
+            IEnumerable<string> groups = new[] { "devops", "backend" };
             IEnumerable<string> empty = Enumerable.Empty<string>();
 
             Assert.Equal(
-                new [] { new[] { "docker", "azure" } , new[] { "csharp", "fsharp"} },
+                new[] { new[] { "docker", "azure" }, new[] { "csharp", "fsharp" } },
                 groups.Select(Skills)
             );
 
             Assert.Equal(
-                new [] { "docker", "azure", "csharp", "fsharp" },
+                new[] { "docker", "azure", "csharp", "fsharp" },
                 groups.SelectMany(Skills)
             );
 
@@ -154,7 +156,7 @@ namespace csharp
             IEnumerable<string> backOps = groups.SelectMany(Skills).Select(Upgrade);
 
             Assert.Equal(
-                new [] { "k8s", "gcp", "fsharp", "haskell" },
+                new[] { "k8s", "gcp", "fsharp", "haskell" },
                 backOps
             );
 
@@ -167,14 +169,15 @@ namespace csharp
 
             Assert.Equal(
                 new[] { "csharp", "fsharp", "docker", "azure" },
-                bindedSkills(new [] { "backend", "devops"})
+                bindedSkills(new[] { "backend", "devops" })
             );
 
-            string Group(string email) 
-                => email switch {
-                    bob   => "devops",
+            string Group(string email)
+                => email switch
+                {
+                    bob => "devops",
                     alice => "backend",
-                    _     =>  "",
+                    _ => "",
                 };
 
 
@@ -187,14 +190,15 @@ namespace csharp
         [Fact]
         public async Task Tasks_SelectMany_Tests()
         {
-            Task<string> PromoteAsync(string level) 
-                => level switch {
-                "Ninja"   => Task.FromResult("Rockstar"),
-                "Senior"  => Task.FromResult("Ninja"),
-                "Mid"     => Task.FromResult("Senior"),
-                "Junior"  => Task.FromResult("Mid"),
-            _         => Task.FromResult(level)
-            };
+            Task<string> PromoteAsync(string level)
+                => level switch
+                {
+                    "Ninja" => Task.FromResult("Rockstar"),
+                    "Senior" => Task.FromResult("Ninja"),
+                    "Mid" => Task.FromResult("Senior"),
+                    "Junior" => Task.FromResult("Mid"),
+                    _ => Task.FromResult(level)
+                };
 
             Task<int> yearsOfExperience = Task.FromResult(4);
 
@@ -210,40 +214,45 @@ namespace csharp
         [Fact]
         public async Task Life_Without_Monads_Tests()
         {
-            int? GetYearsOfExperience(string email) 
-            => email switch { 
-                "bob@abax.no"   => 3, 
-                "alice@abax.no" => 4, 
-                _               => null
+#nullable enable
+            int? GetYearsOfExperience(string email)
+            => email switch
+            {
+                "bob@abax.no" => 3,
+                "alice@abax.no" => 4,
+                _ => null
             };
 
-            string Level(int years) 
-            => years switch { 
-                > 10 => "Rockstar", 
-                > 8  => "Ninja", 
-                > 5  => "Senior", 
-                > 3  => "Mid", 
-                > 0  => "Junior", 
-                _    => null 
+            string? Level(int years)
+            => years switch
+            {
+                > 10 => "Rockstar",
+                > 8 => "Ninja",
+                > 5 => "Senior",
+                > 3 => "Mid",
+                > 0 => "Junior",
+                _ => null
             };
 
-            string Promote(string level) 
-            => level switch { 
-                "Ninja"  => "Rockstar", 
-                "Senior" => "Ninja", 
-                "Mid"    => "Senior", 
-                "Junior" => "Mid", 
-                _ => null 
+            string? Promote(string level)
+            => level switch
+            {
+                "Ninja" => "Rockstar",
+                "Senior" => "Ninja",
+                "Mid" => "Senior",
+                "Junior" => "Mid",
+                _ => null
             };
 
-            int? Years(string level) 
-            => level switch { 
-                "Rockstar" => 12, 
-                "Ninja"    => 10, 
-                "Senior"   => 8, 
-                "Mid"      => 6, 
-                "Junior"   => 2, 
-                _ => null 
+            int? Years(string level)
+            => level switch
+            {
+                "Rockstar" => 12,
+                "Ninja" => 10,
+                "Senior" => 8,
+                "Mid" => 6,
+                "Junior" => 2,
+                _ => null
             };
 
             bool IsSenior(int years) => years > 6;
@@ -271,7 +280,7 @@ namespace csharp
 
                 promotion = hasValue ? result : null;
                 return hasValue;
-            } 
+            }
 
             bool TryYears(string level, out int years)
             {
@@ -284,18 +293,22 @@ namespace csharp
             {
                 var years = GetYearsOfExperience(email);
 
-                if (years.HasValue) {
+                if (years.HasValue)
+                {
                     var level = Level(years.Value);
 
-                    if(!string.IsNullOrEmpty(level)){
+                    if (!string.IsNullOrEmpty(level))
+                    {
                         var newLevel = Promote(level);
 
-                        if(!string.IsNullOrEmpty(newLevel)){
+                        if (!string.IsNullOrEmpty(newLevel))
+                        {
                             var newYears = Years(newLevel);
 
-                            if (newYears.HasValue) {
+                            if (newYears.HasValue)
+                            {
                                 return IsSenior(newYears.Value)
-                                        ? HttpStatusCode.OK 
+                                        ? HttpStatusCode.OK
                                         : HttpStatusCode.Forbidden;
                             }
                         }
@@ -305,13 +318,13 @@ namespace csharp
                 return HttpStatusCode.NotFound;
             }
 
-            HttpStatusCode TryIsAuthorized(string email) 
+            HttpStatusCode TryIsAuthorized(string email)
              => TryGetYearsOfExperience(email, out var years)
                     ? TryLevel(years, out var level)
                         ? TryPromote(level, out var promotion)
                             ? TryYears(promotion, out var newYears)
                                     ? IsSenior(newYears)
-                                        ? HttpStatusCode.OK 
+                                        ? HttpStatusCode.OK
                                         : HttpStatusCode.Forbidden
                                     : HttpStatusCode.NotFound
                                 : HttpStatusCode.NotFound
@@ -334,19 +347,19 @@ namespace csharp
             );
         }
 
-        const string bob   = "bob@abax.no";
+        const string bob = "bob@abax.no";
         const string alice = "alice@abax.no";
-        const string gary  = "gary@abax.no";
+        const string gary = "gary@abax.no";
 
         bool IsEven(int x) => x.IsEven();
 
-        int Add2 (int x) => x.Add2();
+        int Add2(int x) => x.Add2();
 
-        int Add5 (int x) => x.Add5();
+        int Add5(int x) => x.Add5();
 
-        int Add2Then5 (int x) => Add5(Add2(x));
+        int Add2Then5(int x) => Add5(Add2(x));
 
-        bool IsEventIfAdd2Then5 (int x) => IsEven(Add5(Add2(x)));
+        bool IsEventIfAdd2Then5(int x) => IsEven(Add5(Add2(x)));
 
         bool IsSenior(int years) => years.IsSenior(); // int -> bool
 
@@ -369,14 +382,14 @@ namespace csharp
             => LiftTask(func);
 
         Func<Nullable<TSource>, Nullable<TResult>> LiftNullable<TSource, TResult>(Func<TSource, TResult> func)
-            where TSource: struct
-            where TResult: struct
+            where TSource : struct
+            where TResult : struct
             => source => source.Select(func);
 
-        Func<IEnumerable<TSource>, IEnumerable<TResult>> Bind<TSource, TResult>(Func<TSource, IEnumerable<TResult>> func) 
+        Func<IEnumerable<TSource>, IEnumerable<TResult>> Bind<TSource, TResult>(Func<TSource, IEnumerable<TResult>> func)
             => func.Bind();
 
-        Func<Task<TSource>, Task<TResult>> Bind<TSource, TResult>(Func<TSource, Task<TResult>> func) 
+        Func<Task<TSource>, Task<TResult>> Bind<TSource, TResult>(Func<TSource, Task<TResult>> func)
             => func.Bind();
 
         string Level(int years) => years.Level();
@@ -385,9 +398,9 @@ namespace csharp
 
         int Years(string level) => level.Years();
 
-        IEnumerable<string> Skills (string group) => group.Skills();
+        IEnumerable<string> Skills(string group) => group.Skills();
 
-        string Upgrade (string skill) => skill.Upgrade();
+        string Upgrade(string skill) => skill.Upgrade();
 
         T Log<T>(T result)
         {
@@ -400,52 +413,52 @@ namespace csharp
     {
         public static bool IsEven(this int x) => x % 2 == 0;
 
-        public static int Add2 (this int x) => x + 2;
+        public static int Add2(this int x) => x + 2;
 
-        public static int Add5 (this int x) => x + 5;
+        public static int Add5(this int x) => x + 5;
 
         public static bool IsSenior(this int years) => years > 5; // int -> bool
 
-        public static string Level(this int years) 
+        public static string Level(this int years)
         => years switch
         {
             > 10 => "Rockstar",
-            > 8  => "Ninja",
-            > 5  => "Senior",
-            > 3  => "Mid",
-            > 0  => "Junior",
-            _    => "No idea what I'm doing",
+            > 8 => "Ninja",
+            > 5 => "Senior",
+            > 3 => "Mid",
+            > 0 => "Junior",
+            _ => "No idea what I'm doing",
         };
 
-        public static string Promote(this string level) 
+        public static string Promote(this string level)
         => level switch
         {
-            "Ninja"  => "Rockstar",
+            "Ninja" => "Rockstar",
             "Senior" => "Ninja",
-            "Mid"    => "Senior",
+            "Mid" => "Senior",
             "Junior" => "Mid",
-            _        => level
+            _ => level
         };
 
-        public static int Years(this string level) 
+        public static int Years(this string level)
         => level switch
         {
             "Rockstar" => 12,
-            "Ninja"    => 10,
-            "Senior"   => 8,
-            "Mid"      => 6,
-            "Junior"   => 2,
-            _          => 0
+            "Ninja" => 10,
+            "Senior" => 8,
+            "Mid" => 6,
+            "Junior" => 2,
+            _ => 0
         };
 
         public static IEnumerable<string> Skills(this string group)
             => group switch
             {
-                "devops"    => new[] { "docker", "azure" },
-                "backend"   => new[] { "csharp", "fsharp" },
+                "devops" => new[] { "docker", "azure" },
+                "backend" => new[] { "csharp", "fsharp" },
                 "fullstack" => new[] { "js" },
-                "frontend"  => new[] { "js", "css" },
-                _           => new string[] {}
+                "frontend" => new[] { "js", "css" },
+                _ => new string[] { }
             };
 
         public static string Upgrade(this string skill)
@@ -454,8 +467,8 @@ namespace csharp
                 "fsharp" => "haskell",
                 "csharp" => "fsharp",
                 "docker" => "k8s",
-                "azure"  => "gcp",
-                _        => skill
+                "azure" => "gcp",
+                _ => skill
             };
 
         public static IEnumerable<TResult> Select<TSource, TResult>(this IEnumerable<TSource> source, Func<TSource, TResult> func)
@@ -468,8 +481,10 @@ namespace csharp
 
         public static IEnumerable<TResult> SelectMany<TSource, TResult>(this IEnumerable<TSource> source, Func<TSource, IEnumerable<TResult>> selector)
         {
-            foreach (var element in source) {
-                foreach (var subElement in selector(element)) {
+            foreach (var element in source)
+            {
+                foreach (var subElement in selector(element))
+                {
                     yield return subElement;
                 }
             }
@@ -487,19 +502,19 @@ namespace csharp
             return await selector(x);
         }
 
-        public static Nullable<TResult> Select<TSource, TResult> (this Nullable<TSource> source, Func<TSource, TResult> func) 
-            where TSource : struct 
-            where TResult : struct 
+        public static Nullable<TResult> Select<TSource, TResult>(this Nullable<TSource> source, Func<TSource, TResult> func)
+            where TSource : struct
+            where TResult : struct
             => source.HasValue ? func(source.Value) : null;
 
-        public static TResult Match<TSource,TResult>(this Nullable<TSource> source, TResult nothing, Func<TSource,TResult> something) 
-            where TSource: struct
+        public static TResult Match<TSource, TResult>(this Nullable<TSource> source, TResult nothing, Func<TSource, TResult> something)
+            where TSource : struct
             => source.HasValue ? something(source.Value) : nothing;
 
-        public static Func<IEnumerable<TSource>, IEnumerable<TResult>> Bind<TSource, TResult>(this Func<TSource, IEnumerable<TResult>> func) 
+        public static Func<IEnumerable<TSource>, IEnumerable<TResult>> Bind<TSource, TResult>(this Func<TSource, IEnumerable<TResult>> func)
             => source => source.SelectMany(func);
 
-        public static Func<Task<TSource>, Task<TResult>> Bind<TSource, TResult>(this Func<TSource, Task<TResult>> func) 
+        public static Func<Task<TSource>, Task<TResult>> Bind<TSource, TResult>(this Func<TSource, Task<TResult>> func)
             => source => source.SelectMany(func);
     }
 }
