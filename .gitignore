@@ -1,3 +1,4 @@
 *bin
 *obj
 *.ionide
+*node_modules
