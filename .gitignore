@@ -2,3 +2,5 @@
 *obj
 *.ionide
 *node_modules
+.idea
+*.user
